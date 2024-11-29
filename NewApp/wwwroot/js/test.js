@@ -2861,36 +2861,51 @@ function normalizeKey(key) {
 let isAskTestCodeCalled = false;
 let istextcodeInvalid = false;
 
+
 function askTestCode() {
     isAskTestCodeCalled = true;
 
-    // Ask the user if they have a test code
-    const hasTestCode = confirm('Do you have a test code? Click OK for Yes, Cancel for No.');
+    // Check if the URL contains a testcode parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const testCodeFromUrl = urlParams.get('testcode');
 
-    if (hasTestCode) {
+    if (testCodeFromUrl) {
+        // If testcode is present in the URL, automatically fill in the input
+        const input = document.getElementById("dobInput");
+        input.value = testCodeFromUrl;  // Set the test code directly from the URL
+        console.log('Test code from URL:', testCodeFromUrl);
+
+        // Skip the prompt and call submitTestCode directly
+        submitTestCode(); // Call the function to handle the test code submission
 
         console.log(userData);
 
-        const input = document.getElementById("dobInput");
-        input.placeholder = "Enter the test code";
-        createMessageBox("You're almost there! Please enter the test code:");
 
         document.querySelector(".astro-button-container").style.display = "none";
-
-        // Remove the event listener for submitPassword if it exists
-        input.removeEventListener("change", submitPassword);
-
-        // Attach the event listener for submitTestCode
-        input.addEventListener("change", submitTestCode);
-
-        // Log the current value of the input
-        console.log('askTestCode - Current input value:', input.value);
+        input.removeEventListener("change", submitPassword);  // Ensure previous listeners are removed
     } else {
-        istextcodeInvalid = true;
-        askConsent();        // If the user doesn't have a test code, display a message to connect on WhatsApp and email
+        // Ask the user if they have a test code
+        const hasTestCode = confirm('Do you have a test code? Click OK for Yes, Cancel for No.');
 
+        if (hasTestCode) {
+            console.log(userData);
+
+            const input = document.getElementById("dobInput");
+            input.placeholder = "Enter the test code";
+            createMessageBox("You're almost there! Please enter the test code:");
+
+            document.querySelector(".astro-button-container").style.display = "none";
+            input.removeEventListener("change", submitPassword);  // Ensure previous listeners are removed
+            input.addEventListener("change", submitTestCode);  // Attach the submitTestCode listener
+
+            console.log('askTestCode - Current input value:', input.value);
+        } else {
+            istextcodeInvalid = true;
+            askConsent(); // If the user doesn't have a test code, display a message to connect on WhatsApp and email
+        }
     }
 }
+
 let storedTestCode = "";
 
 function submitTestCode() {
